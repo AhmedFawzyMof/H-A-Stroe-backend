@@ -39,6 +39,10 @@ func (routes *routes) Routes(res http.ResponseWriter, req *http.Request) {
 			res.Header().Set("Access-Control-Allow-Origin", "*")
 			res.Header().Set("Access-Control-Allow-Methods", route.method)
 			res.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+			if req.Method == "OPTIONS" {
+				res.WriteHeader(http.StatusOK)
+				return
+			}
 			if req.Method == route.method {
 				if route.auth {
 					Token := middleware.GetToken(req.Header.Get("Authorization"))
