@@ -2,10 +2,8 @@ package router
 
 import (
 	"HAstore/middleware"
-	"fmt"
 	"net/http"
 	"strings"
-	"time"
 )
 
 type routes []router
@@ -33,11 +31,10 @@ func (routes *routes) AddRoute(path, method string, handler handler, auth bool) 
 }
 
 func (routes *routes) Routes(res http.ResponseWriter, req *http.Request) {
-	from := time.Now()
 	for _, route := range *routes {
 		if matched, params := match(route.path, req.URL.Path); matched {
 			res.Header().Set("Access-Control-Allow-Origin", "*")
-			res.Header().Set("Access-Control-Allow-Methods", route.method+",OPTIONS")
+			res.Header().Set("Access-Control-Allow-Methods", route.method+", OPTIONS")
 			res.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 			if req.Method == "OPTIONS" {
 				res.WriteHeader(http.StatusOK)
@@ -53,47 +50,46 @@ func (routes *routes) Routes(res http.ResponseWriter, req *http.Request) {
 					}
 
 					params["authEmail"] = email
+					route.handler(res, req, params)
+					return
 				}
 				route.handler(res, req, params)
-				since := time.Since(from)
-				fmt.Println(since)
 				return
 			}
 
-			since := time.Since(from)
-			fmt.Println(since)
 			http.Error(res, "Not Found", 404)
 			return
 		}
 	}
 
-	since := time.Since(from)
-	fmt.Println(since)
 	http.Error(res, "Not Found", 404)
+
 }
 
-func match(path, requestedPath string) (bool, map[string]string) {
-	pathSlice := strings.Split(path, "/")
-	requestedPathSlice := strings.Split(requestedPath, "/")
-	params := make(map[string]string)
+func match(pattern, path string) (bool, map[string]string) {
+	patternParts := strings.Split(pattern, "/")
+	pathParts := strings.Split(path, "/")
 
-	if len(pathSlice) != len(requestedPathSlice) {
-		return false, params
+	if len(patternParts) != len(pathParts) {
+		return false, nil
 	}
 
-	for i := 0; i < len(pathSlice); i++ {
-		var pathName string = pathSlice[i]
-		var requestedPathName string = requestedPathSlice[i]
-
-		if strings.HasPrefix(pathName, ":") {
-			paramsName := pathName[:1]
-			params[paramsName] = requestedPathSlice[i]
-		}
-
-		if pathName != requestedPathName {
+	if len(patternParts) == len(pathParts) {
+		if pathParts[0] != patternParts[0] {
 			return false, nil
 		}
-
 	}
+
+	params := make(map[string]string)
+
+	for i, patternPart := range patternParts {
+		if strings.HasPrefix(patternPart, ":") {
+			paramName := patternPart[1:]
+			params[paramName] = pathParts[i]
+		} else if patternPart != pathParts[i] {
+			return false, nil
+		}
+	}
+
 	return true, params
 }

@@ -97,7 +97,6 @@ func Filter(res http.ResponseWriter, req *http.Request, params map[string]string
 
 func ProductBySlug(res http.ResponseWriter, req *http.Request, params map[string]string) {
 	res.WriteHeader(http.StatusOK)
-
 	db := database.Connect()
 
 	defer db.Close()
