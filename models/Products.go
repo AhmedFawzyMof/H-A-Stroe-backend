@@ -124,14 +124,41 @@ func (p Product) ProductBySlug(db *sql.DB, productChan chan []byte, wg *sync.Wai
 
 		var Product Product
 
-		if err := products.Scan(&Product.Id,&Product.Tag, &Product.Category, &Product.Name, &Product.Slug, &Product.Description, &Product.Price, &Product.Image, &Product.Color); err != nil {
+		if err := products.Scan(&Product.Id, &Product.Tag, &Product.Category, &Product.Name, &Product.Slug, &Product.Description, &Product.Price, &Product.Image, &Product.Color); err != nil {
 			fmt.Println(err.Error())
 		}
 
 		Products = append(Products, Product)
 	}
 
-	ProductsBytes, err := json.Marshal(Products)
+	var product Product
+	if len(Products) > 1 {
+		for i := range Products {
+			if i != len(Products)-1 {
+				product.Image += Products[i].Image + ","
+				if Products[i].Color.Valid {
+					product.Color.String += Products[i].Color.String + ","
+				}
+			}
+			if i == len(Products)-1 {
+				product.Id = Products[i].Id
+				product.Name = Products[i].Name
+				product.Slug = Products[i].Slug
+				product.Description = Products[i].Description
+				product.Price = Products[i].Price
+				product.Tag = Products[i].Tag
+				product.Category = Products[i].Category
+				if Products[i].Color.Valid {
+					product.Color.String += Products[i].Color.String
+				}
+				product.Image += Products[i].Image
+			}
+		}
+	}else {
+		product = Products[0]
+	}
+
+	ProductsBytes, err := json.Marshal(product)
 
 	if err != nil {
 		fmt.Println(err.Error())

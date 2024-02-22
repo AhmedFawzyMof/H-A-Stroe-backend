@@ -1,13 +1,16 @@
 package routes
 
 import (
+	"HAstore/cache"
 	"HAstore/database"
 	"HAstore/middleware"
 	"HAstore/models"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"sync"
+	"time"
 )
 
 func AllProducts(res http.ResponseWriter, req *http.Request, params map[string]string) {
@@ -38,6 +41,25 @@ func AllProducts(res http.ResponseWriter, req *http.Request, params map[string]s
 
 	Response := make(map[string]interface{}, 1)
 	Response["Products"] = Products
+
+	cache := cache.Cache{
+		Data: Response,
+		Time: time.Now(),
+	}
+
+	if err := cache.Set("products.json"); err != nil {
+		middleware.SendError(err, res)
+		return
+	}
+
+	has, err := cache.Has("Productss", "products.json")
+
+	if err != nil {
+		middleware.SendError(err, res)
+		return
+	}
+
+	fmt.Println(has)
 
 	if err := json.NewEncoder(res).Encode(Response); err != nil {
 		middleware.SendError(err, res)
@@ -114,7 +136,7 @@ func ProductBySlug(res http.ResponseWriter, req *http.Request, params map[string
 
 	close(productChan)
 
-	var Products []models.Product
+	var Products models.Product
 
 	if err := json.Unmarshal(<-productChan, &Products); err != nil {
 		middleware.SendError(err, res)
