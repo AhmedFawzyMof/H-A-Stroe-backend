@@ -8,9 +8,9 @@ import (
 )
 
 type FilterData struct {
-	Min_price int
-	Max_price int
-	Category  string
+	Min_price int    `json:"min_price"`
+	Max_price int    `json:"max_price"`
+	Category  string `json:"category"`
 }
 
 type Product struct {
@@ -154,7 +154,7 @@ func (p Product) ProductBySlug(db *sql.DB, productChan chan []byte, wg *sync.Wai
 				product.Image += Products[i].Image
 			}
 		}
-	}else {
+	} else {
 		product = Products[0]
 	}
 
