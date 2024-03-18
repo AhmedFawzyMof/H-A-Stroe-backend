@@ -18,15 +18,7 @@ func Register(res http.ResponseWriter, req *http.Request, params map[string]stri
 
 	var User models.Users
 
-	BodyData := req.Body
-	Data, err := io.ReadAll(BodyData)
-
-	if err != nil {
-		middleware.SendError(err, res)
-		return
-	}
-
-	if err := json.Unmarshal(Data, &User); err != nil {
+	if err := json.NewDecoder(req.Body).Decode(&User); err != nil {
 		middleware.SendError(err, res)
 		return
 	}

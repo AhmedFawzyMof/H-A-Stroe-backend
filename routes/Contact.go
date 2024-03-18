@@ -5,7 +5,6 @@ import (
 	"HAstore/middleware"
 	"HAstore/models"
 	"encoding/json"
-	"io"
 	"net/http"
 )
 
@@ -18,15 +17,7 @@ func ContactUs(res http.ResponseWriter, req *http.Request, params map[string]str
 
 	var ContactUs models.Contact
 
-	BodyData := req.Body
-	Data, err := io.ReadAll(BodyData)
-
-	if err != nil {
-		middleware.SendError(err, res)
-		return
-	}
-
-	if err := json.Unmarshal(Data, &ContactUs); err != nil {
+	if err := json.NewDecoder(req.Body).Decode(&ContactUs); err != nil {
 		middleware.SendError(err, res)
 		return
 	}

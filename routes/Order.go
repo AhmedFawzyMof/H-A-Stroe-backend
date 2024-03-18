@@ -6,7 +6,6 @@ import (
 	"HAstore/models"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"sync"
 	"time"
@@ -21,16 +20,11 @@ func CheckOut(res http.ResponseWriter, req *http.Request, params map[string]stri
 
 	defer db.Close()
 
-	body, err := io.ReadAll(req.Body)
-
-	if err != nil {
-		middleware.SendError(err, res)
-	}
-
 	var Order models.Order
 
-	if err := json.Unmarshal(body, &Order); err != nil {
+	if err := json.NewDecoder(req.Body).Decode(&Order); err != nil {
 		middleware.SendError(err, res)
+		return
 	}
 
 	orderId := uuid.New()
@@ -72,16 +66,11 @@ func AuthCheckOut(res http.ResponseWriter, req *http.Request, params map[string]
 
 	defer db.Close()
 
-	body, err := io.ReadAll(req.Body)
-
-	if err != nil {
-		middleware.SendError(err, res)
-	}
-
 	var Order models.Order
 
-	if err := json.Unmarshal(body, &Order); err != nil {
+	if err := json.NewDecoder(req.Body).Decode(&Order); err != nil {
 		middleware.SendError(err, res)
+		return
 	}
 
 	Order.User = params["authEmail"]
@@ -126,6 +115,7 @@ func OrderHistroy(res http.ResponseWriter, req *http.Request, params map[string]
 	defer db.Close()
 
 	var Order models.Order
+
 	Order.User = params["authEmail"]
 
 	var TheOrders []models.Order = models.Order.GetHistory(Order, db)
