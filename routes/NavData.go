@@ -25,7 +25,7 @@ func NavData(res http.ResponseWriter, req *http.Request, params map[string]strin
 	tagChan := make(chan []byte, 1)
 
 	wg.Add(2)
-	go models.Category.GetAllCategories(Category, db, categoryChan, wg)
+	go models.Category.GetAllCategories(Category, db, categoryChan, wg, false)
 	go models.Tag.GetAllTags(Tag, db, tagChan, wg)
 	wg.Wait()
 

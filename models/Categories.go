@@ -9,13 +9,19 @@ import (
 
 type Category struct {
 	Name string `json:"name"`
+	Img  string `json:"img"`
 }
 
-func (c Category) GetAllCategories(db *sql.DB, categoryChan chan []byte, wg *sync.WaitGroup) {
+func (c Category) GetAllCategories(db *sql.DB, categoryChan chan []byte, wg *sync.WaitGroup, img bool) {
 	defer wg.Done()
 	var Categories []Category
 
-	categories, err := db.Query("SELECT * FROM Categories")
+	var sqlstmt string = "SELECT name, img FROM Categories"
+	if !img {
+		sqlstmt = "SELECT name FROM Categories"
+	}
+
+	categories, err := db.Query(sqlstmt)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
@@ -25,8 +31,16 @@ func (c Category) GetAllCategories(db *sql.DB, categoryChan chan []byte, wg *syn
 	for categories.Next() {
 		var Category Category
 
-		if err := categories.Scan(&Category.Name); err != nil {
-			fmt.Println(err.Error())
+		if img {
+			err := categories.Scan(&Category.Name, &Category.Img)
+			if err != nil {
+				fmt.Println(err.Error())
+			}
+		} else {
+			err := categories.Scan(&Category.Name)
+			if err != nil {
+				fmt.Println(err.Error())
+			}
 		}
 
 		Categories = append(Categories, Category)

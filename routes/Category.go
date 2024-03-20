@@ -23,7 +23,7 @@ func AllCategories(res http.ResponseWriter, req *http.Request, params map[string
 	categoryChan := make(chan []byte, 1)
 
 	wg.Add(1)
-	go models.Category.GetAllCategories(Category, db, categoryChan, wg)
+	go models.Category.GetAllCategories(Category, db, categoryChan, wg, true)
 	wg.Wait()
 
 	close(categoryChan)
