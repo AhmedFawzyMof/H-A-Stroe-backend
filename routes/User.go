@@ -10,6 +10,10 @@ import (
 )
 
 func Register(res http.ResponseWriter, req *http.Request, params map[string]string) {
+	if params["authEmail"] != "" {
+		http.Error(res, "Forbidden", http.StatusForbidden)
+		return
+	}
 	res.WriteHeader(http.StatusOK)
 
 	db := database.Connect()
@@ -39,6 +43,10 @@ func Register(res http.ResponseWriter, req *http.Request, params map[string]stri
 }
 
 func Login(res http.ResponseWriter, req *http.Request, params map[string]string) {
+	if params["authEmail"] != "" {
+		http.Error(res, "Forbidden", http.StatusForbidden)
+		return
+	}
 	res.WriteHeader(http.StatusOK)
 
 	db := database.Connect()
