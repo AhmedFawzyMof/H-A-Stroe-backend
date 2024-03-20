@@ -2,10 +2,8 @@ package router
 
 import (
 	"HAstore/middleware"
-	"fmt"
 	"net/http"
 	"strings"
-	"time"
 )
 
 func (router *Trie) Router(res http.ResponseWriter, req *http.Request) {
@@ -35,10 +33,7 @@ func (router *Trie) Router(res http.ResponseWriter, req *http.Request) {
 	}
 
 	if req.Method == resultNode.method {
-		now := time.Now()
 		resultNode.handler(res, req, resultNode.params)
-		since := time.Since(now)
-		fmt.Println(since)
 		return
 	}
 }
