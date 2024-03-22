@@ -11,7 +11,7 @@ func (router *Trie) Router(res http.ResponseWriter, req *http.Request) {
 	var token string = req.Header.Get("Authorization")
 
 	if !isFound {
-		http.Error(res, "Not Found", 404)
+		http.Error(res, "Not Found", http.StatusNotFound)
 		return
 	}
 

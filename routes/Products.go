@@ -62,6 +62,8 @@ func Filter(res http.ResponseWriter, req *http.Request, params map[string]string
 		return
 	}
 
+	filters.Category = "%" + filters.Category + "%" 
+
 	db := database.Connect()
 
 	defer db.Close()

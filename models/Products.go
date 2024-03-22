@@ -68,13 +68,13 @@ func (p Product) FilteredProducts(db *sql.DB, filter FilterData, productChan cha
 
 	var Products []Product
 
-	productsPre, err := db.Prepare("SELECT Products.tag, Products.category, Products.name, Products.slug, Products.description, Products.price, ProductImages.image FROM Products INNER JOIN ProductImages ON Products.id = ProductImages.product WHERE Products.price >=? AND Products.price <=? AND Products.category=?  GROUP BY Products.id")
+	productsPre, err := db.Prepare("SELECT Products.tag, Products.category, Products.name, Products.slug, Products.description, Products.price, ProductImages.image FROM Products INNER JOIN ProductImages ON Products.id = ProductImages.product WHERE Products.category LIKE ? AND Products.price >= ? AND Products.price <= ? GROUP BY Products.id")
 
 	if err != nil {
 		fmt.Println(err.Error())
 	}
 
-	products, err := productsPre.Query(filter.Min_price, filter.Max_price, filter.Category)
+	products, err := productsPre.Query(filter.Category, filter.Min_price, filter.Max_price)
 
 	if err != nil {
 		fmt.Println(err.Error())
