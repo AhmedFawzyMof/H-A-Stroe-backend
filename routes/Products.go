@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"strconv"
 	"sync"
 )
 
@@ -62,7 +63,7 @@ func Filter(res http.ResponseWriter, req *http.Request, params map[string]string
 		return
 	}
 
-	filters.Category = "%" + filters.Category + "%" 
+	filters.Category = "%" + filters.Category + "%"
 
 	db := database.Connect()
 
@@ -140,7 +141,13 @@ func ProductsByCategory(res http.ResponseWriter, req *http.Request, params map[s
 	defer db.Close()
 
 	var Product models.Product
-	Product.Category = params["name"]
+	Category, err := strconv.Atoi(params["id"])
+
+	if err != nil {
+		middleware.SendError(err, res)
+		return
+	}
+	Product.Category = Category
 
 	wg := &sync.WaitGroup{}
 
@@ -176,7 +183,14 @@ func ProductsByTag(res http.ResponseWriter, req *http.Request, params map[string
 	defer db.Close()
 
 	var Product models.Product
-	Product.Tag = params["name"]
+
+	Tag, err := strconv.Atoi(params["id"])
+
+	if err != nil {
+		middleware.SendError(err, res)
+		return
+	}
+	Product.Tag = Tag
 
 	wg := &sync.WaitGroup{}
 
