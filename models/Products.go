@@ -111,7 +111,7 @@ func (p Product) ProductBySlug(db *sql.DB, productChan chan []byte, wg *sync.Wai
 
 	var Products []Product
 
-	productsPre, err := db.Prepare("SELECT Products.id, Products.name, Products.nameAr, Products.slug, Products.description, Products.descriptionAr, Products.price, Products.discount, ProductImages.image, ProductImages.color, Tags.name, Categories.name FROM Products LEFT JOIN ProductImages ON Products.id = ProductImages.product AND LEFT JOIN Tags ON Products.tag = Tags.id AND LEFT JOIN Categories.id ON Products.category WHERE Products.slug = ?")
+	productsPre, err := db.Prepare("SELECT Products.id, Products.name, Products.nameAr, Products.slug, Products.description, Products.descriptionAr, Products.price, Products.discount, ProductImages.image, ProductImages.color, Tags.name, Categories.name FROM Products LEFT JOIN ProductImages ON Products.id = ProductImages.product LEFT JOIN Tags ON Products.tag = Tags.id LEFT JOIN Categories ON Products.category = Categories.id WHERE Products.slug = ?")
 
 	if err != nil {
 		fmt.Println(err.Error())
@@ -129,7 +129,7 @@ func (p Product) ProductBySlug(db *sql.DB, productChan chan []byte, wg *sync.Wai
 
 		var Product Product
 
-		if err := products.Scan(&Product.Id, &Product.Name, &Product.Slug, &Product.Description, &Product.Price, &Product.Image, &Product.Color, &Product.TagName, &Product.CategoryName); err != nil {
+		if err := products.Scan(&Product.Id, &Product.Name, &Product.NameAr, &Product.Slug, &Product.Description, &Product.DescriptionAr, &Product.Price, &Product.Discount, &Product.Image, &Product.Color, &Product.TagName, &Product.CategoryName); err != nil {
 			fmt.Println(err.Error())
 		}
 
