@@ -2,25 +2,24 @@ package models
 
 import (
 	"database/sql"
-	"encoding/json"
 	"fmt"
-	"sync"
 )
 
 type Offers struct {
-	Id    	int    `json:"id"`
-	Img 	string `json:"image"`
-	Product string `json:"product"`
+	Id          int    `json:"id"`
+	Name        string `json:"name"`
+	Img         string `json:"image"`
+	Subcategory int    `json:"subcategory"`
 }
 
-func (o Offers) GetAllOffers(db *sql.DB, offersChan chan []byte, wg *sync.WaitGroup) {
-	defer wg.Done()
+func (o Offers) GetAllOffers(db *sql.DB) ([]Offers, error) {
 
 	var TOffers []Offers
 
 	offers, err := db.Query("SELECT * FROM Offers")
 	if err != nil {
-		fmt.Println(err.Error())
+		fmt.Println(err)
+		return nil, fmt.Errorf("error while prossing offers")
 	}
 
 	defer offers.Close()
@@ -28,19 +27,14 @@ func (o Offers) GetAllOffers(db *sql.DB, offersChan chan []byte, wg *sync.WaitGr
 	for offers.Next() {
 		var offer Offers
 
-		if offers.Scan(&offer.Id, &offer.Img,	&offer.Product); err != nil {
-			fmt.Println(err.Error())
+		if err := offers.Scan(&offer.Id, &offer.Name, &offer.Subcategory, &offer.Img); err != nil {
+			return nil, fmt.Errorf("error while prossing offers")
 		}
 
+		offer.Img = "http://localhost:5500/assets" + offer.Img
 
 		TOffers = append(TOffers, offer)
 	}
 
-	offersBytes, err := json.Marshal(TOffers)
-
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-
-	offersChan <- offersBytes
+	return TOffers, nil
 }

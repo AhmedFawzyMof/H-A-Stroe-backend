@@ -67,9 +67,7 @@ func (t *Trie) Search(route string) (*Node, bool) {
 
 	node := t.root
 	parts := strings.Split(route, "/")[1:]
-
 	for _, part := range parts {
-
 		if _, ok := node.children[part]; !ok {
 
 			var found bool
