@@ -33,7 +33,7 @@ func (s SubCategory) GetHomeSubCategory(db *sql.DB) ([]SubCategory, error) {
 			fmt.Println(err.Error())
 			return nil, fmt.Errorf("error while prossing subcategories")
 		}
-		SubCategory.Img = "http://localhost:5500/assets" + SubCategory.Img
+		SubCategory.Img = "https://h-a-stroe-backend.onrender.com/assets" + SubCategory.Img
 		SubCategories = append(SubCategories, SubCategory)
 	}
 
@@ -55,7 +55,7 @@ func (s SubCategory) GetAllSubCategory(db *sql.DB) ([]SubCategory, error) {
 		if err := rows.Scan(&SubCategory.Id, &SubCategory.Name, &SubCategory.NameAr, &SubCategory.CategoryId, &SubCategory.CategoryName, &SubCategory.CategoryNameAr, &SubCategory.Img); err != nil {
 			return nil, fmt.Errorf("error while prossing subcategories")
 		}
-		SubCategory.Img = "http://localhost:5500/assets" + SubCategory.Img
+		SubCategory.Img = "https://h-a-stroe-backend.onrender.com/assets" + SubCategory.Img
 		SubCategories = append(SubCategories, SubCategory)
 	}
 
