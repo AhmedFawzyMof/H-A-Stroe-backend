@@ -8,7 +8,7 @@ import (
 	"net/http"
 )
 
-func Home(res http.ResponseWriter, req *http.Request, params map[string]string) {
+func Home(res http.ResponseWriter, req *http.Request) {
 	res.WriteHeader(http.StatusOK)
 
 	db := database.Connect()

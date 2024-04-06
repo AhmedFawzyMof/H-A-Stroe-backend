@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 )
 
@@ -33,7 +34,7 @@ func (s SubCategory) GetHomeSubCategory(db *sql.DB) ([]SubCategory, error) {
 			fmt.Println(err.Error())
 			return nil, fmt.Errorf("error while prossing subcategories")
 		}
-		SubCategory.Img = "https://h-a-stroe-backend.onrender.com/assets" + SubCategory.Img
+		SubCategory.Img = "http://localhost:5500/assets" + SubCategory.Img
 		SubCategories = append(SubCategories, SubCategory)
 	}
 
@@ -55,9 +56,37 @@ func (s SubCategory) GetAllSubCategory(db *sql.DB) ([]SubCategory, error) {
 		if err := rows.Scan(&SubCategory.Id, &SubCategory.Name, &SubCategory.NameAr, &SubCategory.CategoryId, &SubCategory.CategoryName, &SubCategory.CategoryNameAr, &SubCategory.Img); err != nil {
 			return nil, fmt.Errorf("error while prossing subcategories")
 		}
-		SubCategory.Img = "https://h-a-stroe-backend.onrender.com/assets" + SubCategory.Img
+		SubCategory.Img = "http://localhost:5500/assets" + SubCategory.Img
 		SubCategories = append(SubCategories, SubCategory)
 	}
 
 	return SubCategories, nil
+}
+
+func (s SubCategory) GetSubCategoryByCategory(db *sql.DB, categoryId int) ([]SubCategory, error) {
+	var SubCategories []SubCategory
+
+	rows, err := db.Query("SELECT * FROM SubCategory WHERE category = ?", categoryId)
+
+	if err != nil {
+		fmt.Println(err.Error())
+		return nil, errors.New("error while prossing subcategories")
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		var SubCategory SubCategory
+
+		if err := rows.Scan(&SubCategory.Id, &SubCategory.Name, &SubCategory.NameAr, &SubCategory.CategoryId, &SubCategory.Img); err != nil {
+			fmt.Println(err.Error())
+
+			return nil, errors.New("error while prossing subcategories")
+		}
+		SubCategory.Img = "http://localhost:5500/assets" + SubCategory.Img
+		SubCategories = append(SubCategories, SubCategory)
+	}
+
+	return SubCategories, nil
+
 }

@@ -2,9 +2,7 @@ package models
 
 import (
 	"database/sql"
-	"encoding/json"
 	"fmt"
-	"sync"
 )
 
 type Category struct {
@@ -14,18 +12,13 @@ type Category struct {
 	Img    string `json:"img"`
 }
 
-func (c Category) GetAllCategories(db *sql.DB, categoryChan chan []byte, wg *sync.WaitGroup, img bool) {
-	defer wg.Done()
+func (c Category) GetAllCategories(db *sql.DB) ([]Category, error) {
 	var Categories []Category
 
-	var sqlstmt string = "SELECT * FROM Categories"
-	if !img {
-		sqlstmt = "SELECT id, name, nameAr FROM Categories"
-	}
+	categories, err := db.Query("SELECT * FROM Categories")
 
-	categories, err := db.Query(sqlstmt)
 	if err != nil {
-		fmt.Println(err.Error())
+		return nil, fmt.Errorf("error while prossing categories")
 	}
 
 	defer categories.Close()
@@ -33,27 +26,26 @@ func (c Category) GetAllCategories(db *sql.DB, categoryChan chan []byte, wg *syn
 	for categories.Next() {
 		var Category Category
 
-		if img {
-			err := categories.Scan(&Category.Id, &Category.Name, &Category.NameAr, &Category.Img)
-			if err != nil {
-				fmt.Println(err.Error())
-			}
-		} else {
-			err := categories.Scan(Category.Id, &Category.Name, &Category.NameAr)
-			if err != nil {
-				fmt.Println(err.Error())
-			}
+		if err := categories.Scan(&Category.Id, &Category.Name, &Category.NameAr, &Category.Img); err != nil {
+			return nil, fmt.Errorf("error while prossing categories")
 		}
 
 		Categories = append(Categories, Category)
 	}
 
-	categoriesBytes, err := json.Marshal(Categories)
+	return Categories, nil
+}
 
-	if err != nil {
+func (c Category) GetCategoryById(db *sql.DB, categoryId int) (Category, error) {
+
+	categories := db.QueryRow("SELECT * FROM Categories WHERE id = ?", categoryId)
+
+	var category Category
+
+	if err := categories.Scan(&category.Id, &category.Name, &category.NameAr); err != nil {
 		fmt.Println(err.Error())
+		return Category{}, fmt.Errorf("error while prossing categories")
 	}
 
-	categoryChan <- categoriesBytes
-
+	return category, nil
 }

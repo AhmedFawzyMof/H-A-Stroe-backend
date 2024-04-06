@@ -1,7 +1,7 @@
 package api
 
 import (
-	"HAstore/router"
+	"HAstore/middleware"
 	"HAstore/routes"
 	"fmt"
 	"net/http"
@@ -18,20 +18,14 @@ func NewServer(listenAddress int) *Server {
 	}
 }
 
-const (
-	POST   = "POST"
-	GET    = "GET"
-	PUT    = "PUT"
-	DELETE = "DELETE"
-)
-
 func (s *Server) Start() error {
-	Router := router.NewRouter()
 
-	Router.Insert("/api/home", routes.Home, GET)
-	Router.Insert("/api/categories", routes.Categories, GET)
+	mux := http.NewServeMux()
 
-	http.HandleFunc("/", Router.Router)
-	http.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("./assets"))))
-	return http.ListenAndServe(s.listenAddress, nil)
+	mux.HandleFunc("GET /api/home", routes.Home)
+	mux.HandleFunc("GET /api/categories", routes.Categories)
+	mux.HandleFunc("GET /api/category/{id}/{limit}", routes.CategoryPage)
+
+	mux.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("./assets"))))
+	return http.ListenAndServe(s.listenAddress, middleware.CorsMiddleware(mux))
 }
