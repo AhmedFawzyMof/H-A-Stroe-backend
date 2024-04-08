@@ -79,8 +79,6 @@ func (s SubCategory) GetSubCategoryByCategory(db *sql.DB, categoryId int) ([]Sub
 		var SubCategory SubCategory
 
 		if err := rows.Scan(&SubCategory.Id, &SubCategory.Name, &SubCategory.NameAr, &SubCategory.CategoryId, &SubCategory.Img); err != nil {
-			fmt.Println(err.Error())
-
 			return nil, errors.New("error while prossing subcategories")
 		}
 		SubCategory.Img = "http://localhost:5500/assets" + SubCategory.Img
@@ -89,4 +87,17 @@ func (s SubCategory) GetSubCategoryByCategory(db *sql.DB, categoryId int) ([]Sub
 
 	return SubCategories, nil
 
+}
+
+func (s SubCategory) GetSubCategoryById(db *sql.DB, id int) (SubCategory, error) {
+	var subCategory SubCategory
+	row := db.QueryRow("SELECT * FROM SubCategory WHERE id = ?", id)
+
+	if err := row.Scan(&subCategory.Id, &subCategory.Name, &subCategory.NameAr, &subCategory.CategoryId, &subCategory.Img); err != nil {
+		return SubCategory{}, errors.New("error while prossing subcategories")
+	}
+
+	subCategory.Img = "http://localhost:5500/assets" + subCategory.Img
+
+	return subCategory, nil
 }

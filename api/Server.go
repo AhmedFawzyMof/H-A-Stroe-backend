@@ -25,6 +25,8 @@ func (s *Server) Start() error {
 	mux.HandleFunc("GET /api/home", routes.Home)
 	mux.HandleFunc("GET /api/categories", routes.Categories)
 	mux.HandleFunc("GET /api/category/{id}/{limit}", routes.CategoryPage)
+	mux.HandleFunc("GET /api/subcategory/{id}/{limit}", routes.SubCategoryByid)
+	mux.HandleFunc("GET /api/product/{id}", routes.GetProduct)
 
 	mux.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("./assets"))))
 	return http.ListenAndServe(s.listenAddress, middleware.CorsMiddleware(mux))

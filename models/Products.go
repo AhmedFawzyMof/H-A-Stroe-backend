@@ -3,6 +3,7 @@ package models
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 )
 
 type FilterData struct {
@@ -22,6 +23,9 @@ type Product struct {
 	Price         float64        `json:"price"`
 	Discount      float64        `json:"discount"`
 	Image         string         `json:"image"`
+	Warranty      sql.NullString `json:"warranty"`
+	Brand         string         `json:"brand"`
+	Material      string         `json:"material"`
 	Color         sql.NullString `json:"color"`
 }
 
@@ -63,50 +67,12 @@ type Product struct {
 // 	productChan <- ProductsBytes
 // }
 
-// func (p Product) FilteredProducts(db *sql.DB, filter FilterData, productChan chan []byte, wg *sync.WaitGroup) {
-// 	defer wg.Done()
-
-// 	var Products []Product
-
-// 	productsPre, err := db.Prepare("SELECT Products.id, Products.name, Products.nameAr, Products.slug, Products.description, Products.descriptionAr, Products.price, Products.discount, ProductImages.image FROM Products INNER JOIN ProductImages ON Products.id = ProductImages.product WHERE Products.category LIKE ? AND Products.price >= ? AND Products.price <= ? GROUP BY Products.id")
-
-// 	if err != nil {
-// 		fmt.Println(err.Error())
-// 	}
-
-// 	products, err := productsPre.Query(filter.Category, filter.Min_price, filter.Max_price)
-
-// 	if err != nil {
-// 		fmt.Println(err.Error())
-// 	}
-
-// 	defer products.Close()
-
-// 	for products.Next() {
-// 		var Product Product
-
-// 		if err := products.Scan(&Product.Id, &Product.Name, &Product.NameAr, &Product.Slug, &Product.Description, &Product.DescriptionAr, &Product.Price, &Product.Discount, &Product.Image); err != nil {
-// 			fmt.Println(err.Error())
-// 		}
-
-// 		Products = append(Products, Product)
-// 	}
-
-// 	ProductsBytes, err := json.Marshal(Products)
-
-// 	if err != nil {
-// 		fmt.Println(err.Error())
-// 	}
-
-// 	productChan <- ProductsBytes
-// }
-
 func (p Product) ProductsByCategorys(db *sql.DB, id, limit int) ([]Product, error) {
 	var Products []Product
 	var oldLimit int = 0
 
 	if limit > 20 {
-		oldLimit = limit /2
+		oldLimit = limit / 2
 	}
 
 	const stableLimit = 20
@@ -139,43 +105,65 @@ func (p Product) ProductsByCategorys(db *sql.DB, id, limit int) ([]Product, erro
 	return Products, nil
 }
 
-// func (p Product) ProductsByTag(db *sql.DB, productChan chan []byte, wg *sync.WaitGroup) {
-// 	defer wg.Done()
+func (p Product) ProductsBySubCategorys(db *sql.DB, id, limit int) ([]Product, error) {
+	var Products []Product
+	var oldLimit int = 0
 
-// 	var Products []Product
+	if limit > 20 {
+		oldLimit = limit / 2
+	}
 
-// 	productsPre, err := db.Prepare("SELECT Products.id, Products.name, Products.nameAr, Products.slug, Products.description, Products.descriptionAr, Products.price, Products.discount, ProductImages.image FROM Products INNER JOIN ProductImages ON Products.id = ProductImages.product WHERE Products.tag = ? GROUP BY Products.id")
+	const stableLimit = 20
 
-// 	if err != nil {
-// 		fmt.Println(err.Error())
-// 	}
+	productsPre, err := db.Prepare("SELECT Products.id, Products.name, Products.nameAr, Products.description, Products.descriptionAr, Products.price, Products.discount, ProductImages.image FROM Products INNER JOIN ProductImages ON Products.id = ProductImages.product WHERE Products.subcategory = ? GROUP BY Products.id LIMIT ?,?")
 
-// 	products, err := productsPre.Query(p.Tag)
+	if err != nil {
+		return nil, errors.New("error while prossing products")
+	}
 
-// 	if err != nil {
-// 		fmt.Println(err.Error())
-// 	}
+	products, err := productsPre.Query(id, oldLimit, stableLimit)
 
-// 	defer products.Close()
+	if err != nil {
+		return nil, errors.New("error while prossing products")
+	}
 
-// 	for products.Next() {
-// 		var Product Product
+	defer products.Close()
 
-// 		if err := products.Scan(&Product.Id, &Product.Name, &Product.NameAr, &Product.Slug, &Product.Description, &Product.DescriptionAr, &Product.Price, &Product.Discount, &Product.Image); err != nil {
-// 			fmt.Println(err.Error())
-// 		}
+	for products.Next() {
+		var Product Product
 
-// 		Products = append(Products, Product)
-// 	}
+		if err := products.Scan(&Product.Id, &Product.Name, &Product.NameAr, &Product.Description, &Product.DescriptionAr, &Product.Price, &Product.Discount, &Product.Image); err != nil {
+			return nil, errors.New("error while prossing products")
+		}
 
-// 	ProductsBytes, err := json.Marshal(Products)
+		Product.Image = "http://localhost:5500/assets" + Product.Image
+		Products = append(Products, Product)
+	}
 
-// 	if err != nil {
-// 		fmt.Println(err.Error())
-// 	}
+	return Products, nil
+}
 
-// 	productChan <- ProductsBytes
-// }
+func (p Product) GetProductById(db *sql.DB, id int) (Product, error) {
+	var product Product
+
+	preprow, err := db.Prepare("SELECT Products.id, Products.name, Products.nameAr, Products.description, Products.descriptionAr, Products.price, Products.discount, Products.warranty, Products.brand, Products.material, ProductImages.image, ProductImages.color FROM Products INNER JOIN ProductImages ON Products.id = ProductImages.product WHERE Products.id = ?")
+
+	if err != nil {
+		return Product{}, errors.New("error while prossing product")
+	}
+
+	row := preprow.QueryRow(id)
+
+	if err := row.Scan(&product.Id, &product.Name, &product.NameAr, &product.Description, &product.DescriptionAr, &product.Price, &product.Discount, &product.Warranty, &product.Brand, &product.Material, &product.Image, &product.Color); err != nil {
+		fmt.Println(err.Error())
+		return Product{}, errors.New("error while prossing product")
+	}
+
+	product.Image = "http://localhost:5500/assets" + product.Image
+
+	return product, nil
+}
+
 // func (p Product) ProductsBySearch(db *sql.DB, productChan chan []byte, wg *sync.WaitGroup) {
 // 	defer wg.Done()
 
