@@ -164,7 +164,7 @@ func (p Product) ProductById(db *sql.DB, id int) (Product, error) {
 	return product, nil
 }
 
-func (p Product) ProductByOffer(db *sql.DB, subcategory, limit int) ([]Product, error) { 
+func (p Product) ProductByOffer(db *sql.DB, subcategory, limit int) ([]Product, error) {
 	var Products []Product
 	var oldLimit int = 0
 
@@ -174,15 +174,17 @@ func (p Product) ProductByOffer(db *sql.DB, subcategory, limit int) ([]Product, 
 
 	const stableLimit = 20
 
-	productsPre, err := db.Prepare("SELECT Products.id, Products.name, Products.nameAr, Products.description, Products.descriptionAr, Products.price, Products.discount, ProductImages.image FROM Products INNER JOIN ProductImages ON Products.id = ProductImages.product WHERE Products.subcategory = ? AND Products.discount > 0  GROUP BY Products.id LIMIT ?,? ORDER BY Products.discount DESC")
+	productsPre, err := db.Prepare("SELECT Products.id, Products.name, Products.nameAr, Products.description, Products.descriptionAr, Products.price, Products.discount, ProductImages.image FROM Products INNER JOIN ProductImages ON Products.id = ProductImages.product WHERE Products.subcategory = ? AND Products.discount > 0  GROUP BY Products.id ORDER BY Products.discount DESC LIMIT ?,?")
 
 	if err != nil {
+		fmt.Println(err.Error())
 		return nil, errors.New("error while prossing products")
 	}
 
 	products, err := productsPre.Query(subcategory, oldLimit, stableLimit)
 
 	if err != nil {
+		fmt.Println(err.Error())
 		return nil, errors.New("error while prossing products")
 	}
 
@@ -192,6 +194,8 @@ func (p Product) ProductByOffer(db *sql.DB, subcategory, limit int) ([]Product, 
 		var Product Product
 
 		if err := products.Scan(&Product.Id, &Product.Name, &Product.NameAr, &Product.Description, &Product.DescriptionAr, &Product.Price, &Product.Discount, &Product.Image); err != nil {
+
+			fmt.Println(err.Error())
 			return nil, errors.New("error while prossing products")
 		}
 
