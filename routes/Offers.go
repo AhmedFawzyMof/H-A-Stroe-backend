@@ -10,10 +10,18 @@ import (
 	"strconv"
 )
 
-func GetProduct(res http.ResponseWriter, req *http.Request) {
+func ProductByOffer(res http.ResponseWriter, req *http.Request) {
 	res.WriteHeader(http.StatusOK)
-	
-	id, err := strconv.Atoi(req.PathValue("id"))
+
+	subcategory, err := strconv.Atoi(req.PathValue("subcategory"))
+
+	if err != nil {
+		er := errors.New("invalid id")
+		middleware.SendError(er, res)
+		return
+	}
+
+	limit, err := strconv.Atoi(req.PathValue("limit"))
 
 	if err != nil {
 		er := errors.New("invalid id")
@@ -25,15 +33,17 @@ func GetProduct(res http.ResponseWriter, req *http.Request) {
 	defer db.Close()
 
 	product := models.Product{}
-	Product, err := product.ProductById(db, id)
+
+	Products, err := product.ProductByOffer(db, subcategory, limit)
 
 	if err != nil {
 		middleware.SendError(err, res)
 		return
 	}
 
-	if err := json.NewEncoder(res).Encode(Product); err != nil {
+	if err := json.NewEncoder(res).Encode(Products); err != nil {
 		middleware.SendError(err, res)
 		return
 	}
+
 }
