@@ -98,7 +98,7 @@ func (p Product) ProductsByCategorys(db *sql.DB, id, limit int) ([]Product, erro
 			return nil, errors.New("error while prossing products")
 		}
 
-		Product.Image = "http://localhost:5500/assets" + Product.Image
+		Product.Image = "https://h-a-stroe-backend.onrender.com/assets" + Product.Image
 		Products = append(Products, Product)
 	}
 
@@ -136,7 +136,7 @@ func (p Product) ProductsBySubCategorys(db *sql.DB, id, limit int) ([]Product, e
 			return nil, errors.New("error while prossing products")
 		}
 
-		Product.Image = "http://localhost:5500/assets" + Product.Image
+		Product.Image = "https://h-a-stroe-backend.onrender.com/assets" + Product.Image
 		Products = append(Products, Product)
 	}
 
@@ -159,7 +159,7 @@ func (p Product) GetProductById(db *sql.DB, id int) (Product, error) {
 		return Product{}, errors.New("error while prossing product")
 	}
 
-	product.Image = "http://localhost:5500/assets" + product.Image
+	product.Image = "https://h-a-stroe-backend.onrender.com/assets" + product.Image
 
 	return product, nil
 }
