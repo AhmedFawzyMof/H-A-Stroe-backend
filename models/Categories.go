@@ -9,7 +9,6 @@ type Category struct {
 	Id     int    `json:"id"`
 	Name   string `json:"name"`
 	NameAr string `json:"nameAr"`
-	Img    string `json:"img"`
 }
 
 func (c Category) GetAllCategories(db *sql.DB) ([]Category, error) {
@@ -26,7 +25,7 @@ func (c Category) GetAllCategories(db *sql.DB) ([]Category, error) {
 	for categories.Next() {
 		var Category Category
 
-		if err := categories.Scan(&Category.Id, &Category.Name, &Category.NameAr, &Category.Img); err != nil {
+		if err := categories.Scan(&Category.Id, &Category.Name, &Category.NameAr); err != nil {
 			return nil, fmt.Errorf("error while prossing categories")
 		}
 

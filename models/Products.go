@@ -29,43 +29,48 @@ type Product struct {
 	Color         sql.NullString `json:"color"`
 }
 
-// func (p Product) GetAllProduct(db *sql.DB, productChan chan []byte, wg *sync.WaitGroup) {
-// 	defer wg.Done()
+func (p Product) GetAllProduct(db *sql.DB, limit int) ([]Product, error) {
+	var Products []Product
+	var oldLimit int = 0
 
-// 	var Products []Product
+	if limit > 20 {
+		oldLimit = limit / 2
+	}
 
-// 	productsPre, err := db.Prepare("SELECT Products.id, Products.name, Products.nameAr, Products.slug, Products.description, Products.descriptionAr, Products.price, Products.discount, ProductImages.image  FROM Products INNER JOIN ProductImages ON Products.id = ProductImages.product GROUP BY Products.id")
+	const stableLimit = 20
 
-// 	if err != nil {
-// 		fmt.Println(err.Error())
-// 	}
+	productsPre, err := db.Prepare("SELECT Products.id, Products.name, Products.category, Products.nameAr, Products.description, Products.descriptionAr, Products.price, Products.discount, ProductImages.image FROM Products INNER JOIN ProductImages ON Products.id = ProductImages.product WHERE Products.discount > 0  GROUP BY Products.id ORDER BY Products.discount DESC LIMIT ?,?")
 
-// 	products, err := productsPre.Query()
+	if err != nil {
+		fmt.Println(err.Error())
+		return nil, errors.New("error while prossing products")
+	}
 
-// 	if err != nil {
-// 		fmt.Println(err.Error())
-// 	}
+	products, err := productsPre.Query(oldLimit, stableLimit)
 
-// 	defer products.Close()
+	if err != nil {
+		fmt.Println(err.Error())
+		return nil, errors.New("error while prossing products")
+	}
 
-// 	for products.Next() {
-// 		var Product Product
+	defer products.Close()
 
-// 		if err := products.Scan(&Product.Id, &Product.Name, &Product.NameAr, &Product.Slug, &Product.Description, &Product.DescriptionAr, &Product.Price, &Product.Discount, &Product.Image); err != nil {
-// 			fmt.Println(err.Error())
-// 		}
+	for products.Next() {
+		var Product Product
 
-// 		Products = append(Products, Product)
-// 	}
+		if err := products.Scan(&Product.Id, &Product.Name, &Product.Category, &Product.NameAr, &Product.Description, &Product.DescriptionAr, &Product.Price, &Product.Discount, &Product.Image); err != nil {
 
-// 	ProductsBytes, err := json.Marshal(Products)
+			fmt.Println(err.Error())
+			return nil, errors.New("error while prossing products")
+		}
 
-// 	if err != nil {
-// 		fmt.Println(err.Error())
-// 	}
+		Product.Image = "https://h-a-stroe-backend.onrender.com/assets" + Product.Image
+		Products = append(Products, Product)
+	}
 
-// 	productChan <- ProductsBytes
-// }
+	return Products, nil
+
+}
 
 func (p Product) ProductsByCategorys(db *sql.DB, id, limit int) ([]Product, error) {
 	var Products []Product
